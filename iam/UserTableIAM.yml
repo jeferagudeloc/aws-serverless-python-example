@@ -1,0 +1,10 @@
+UserTableIAM:
+  Effect: Allow
+  Action:
+    - dynamodb:Scan
+    - dynamodb:Query
+    - dynamodb:PutItem
+    - dynamodb:GetItem
+    - dynamodb:UpdateItem
+  Resource:
+    - ${self:custom.UserTable.arn}
