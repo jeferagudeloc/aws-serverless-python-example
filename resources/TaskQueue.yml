@@ -1,0 +1,4 @@
+TaskQueue:
+  Type: AWS::SQS::Queue
+  Properties:
+    QueueName: ${self:custom.TaskQueue.name}

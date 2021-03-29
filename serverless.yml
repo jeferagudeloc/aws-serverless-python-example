@@ -15,11 +15,16 @@ provider:
   environment:
       STAGE: "${self:provider.stage}"
       USER_TABLE_NAME: ${self:custom.UserTable.name}
+      PROCESS_QUEUE_URL: { Ref: ProcessQueue }
   iamRoleStatements:
       - ${file(iam/UserTableIAM.yml):UserTableIAM}
-  resources:
-    Resources:
-        UserTable: ${file(resources/UserTable.yml):UserTable}
+      - ${file(iam/TaskQueueIAM.yml):TaskQueueIAM}
+      - ${file(iam/ProcessQueueIAM.yml):ProcessQueueIAM}
+resources:
+  Resources:
+      UserTable: ${file(resources/UserTable.yml):UserTable}
+      TaskQueue: ${file(resources/TaskQueue.yml):TaskQueue}
+      ProcessQueue: ${file(resources/ProcessQueue.yml):ProcessQueue}
 functions:
   login:
     handler: src/handlers/session.login
@@ -33,18 +38,37 @@ functions:
       - http:
           method: POST
           path: /user
+  send:
+    handler: src/handlers/core/send.handler
+    events:
+      - http:
+          method: POST
+          path: /send
+  receive:
+    handler: src/handlers/core/receive.handler
+    events:
+      - http:
+          method: POST
+          path: /receive
+      - sqs:
+          arn: ${self:custom.TaskQueue.arn}
+          batchSize: 1
   getUser:
     handler: src/handlers/repository/user.get
     events:
       - http:
           method: GET
           path: /user/{id}
-  hello:
-    handler: handler.hello
 custom:
   UserTable:
     name: !Ref UserTable
     arn: !GetAtt UserTable.Arn
+  TaskQueue:
+    name: TaskQueue-${self:provider.stage}
+    arn: !GetAtt TaskQueue.Arn
+  ProcessQueue:
+    name: ProcessQueue-${self:provider.stage}
+    arn: !GetAtt ProcessQueue.Arn
   bundle:
     linting: false
   dynamodb:

@@ -1,0 +1,6 @@
+TaskQueueIAM:
+  Effect: Allow
+  Action:
+    - sqs:ReceiveMessage
+  Resource:
+    - ${self:custom.TaskQueue.arn}

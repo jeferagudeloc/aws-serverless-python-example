@@ -1,0 +1,6 @@
+ProcessQueueIAM:
+  Effect: Allow
+  Action:
+    - sqs:SendMessage
+  Resource:
+    - ${self:custom.ProcessQueue.arn}
